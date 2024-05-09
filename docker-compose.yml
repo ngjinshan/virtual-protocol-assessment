@@ -1,0 +1,38 @@
+version: "3"
+services:
+  mysql:
+    image: mysql:latest
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: testdb
+    ports:
+      - "3306:3306" # Maps port 3306 in the container to 3306 on the host
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"
+  backend:
+    build: ./backend
+    restart: unless-stopped
+    ports:
+      - 3000:3000 # Maps port 3000 in the container to 3000 on the host
+    depends_on:
+      - mysql
+      - redis
+    environment:
+      MYSQL_HOST: mysql
+      MYSQL_PORT: 3306
+      MYSQL_USER: root
+      MYSQL_PASSWORD: root
+      MYSQL_DATABASE: testdb
+  frontend:
+    build: ./frontend
+    ports:
+      - 8000:8000
+  nginx:
+    build: ./nginx
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+      - frontend
